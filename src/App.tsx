@@ -15,6 +15,8 @@ const App = () => {
   const [value, setValue] = useState(0);
   const [total, setTotal] = useState(data.length)
   const [name, setName] = useState('')
+  const [step, setStep] = useState(0)
+
 
   useEffect(() => {
     const chosen: number = Math.floor(Math.random() * total)
@@ -22,10 +24,39 @@ const App = () => {
     setName(data[chosen]['name'])
   }, [])
 
-  console.log(`${bucket_url}/${name}.jpg`)
-  return (
-    <div className="fixed inset-0 flex items-center justify-center">
-      <Reveal src={`${bucket_url}${name}.jpg`} />
+  const handleNext = () => {
+    setStep(s => Math.min(s + 1, 4))
+  }
+
+  const handleReset = () => {
+    setStep(0)
+  }
+
+return (
+    <div className="flex flex-col items-center gap-4 p-6">
+      
+      {/* Reveal component */}
+      <Reveal src={`${bucket_url}${name}.jpg`} step={step} />
+
+      {/* Controls */}
+      <div className="flex gap-2">
+        <button
+          onClick={handleNext}
+          className="px-4 py-2 bg-black text-white rounded"
+        >
+          Next
+        </button>
+
+        <button
+          onClick={handleReset}
+          className="px-4 py-2 bg-gray-300 rounded"
+        >
+          Reset
+        </button>
+      </div>
+
+      {/* Debug (optional) */}
+      <p>Step: {step}</p>
     </div>
   )
 }
