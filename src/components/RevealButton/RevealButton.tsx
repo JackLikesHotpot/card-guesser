@@ -6,7 +6,6 @@ export function RevealController({ src }: { src: string }) {
   const [buttonText, setButtonText] = useState('Reveal')
   
   useEffect(() => {
-    console.log(step)
     if (step === 4) {
       setButtonText('Skip')
     }

@@ -16,19 +16,47 @@ const App = () => {
   const [total, setTotal] = useState(data.length)
   const [name, setName] = useState('')
   const [step, setStep] = useState(0)
-
+  const [disabled, setDisabled] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(60)
 
   useEffect(() => {
-    const chosen: number = Math.floor(Math.random() * total)
-    setValue(chosen)
-    setName(data[chosen]['name'])
+    pickRandomCard()
   }, [])
 
+useEffect(() => {
+  setTimeLeft(60)
+
+  const interval = setInterval(() => {
+    setTimeLeft(t => {
+      if (t <= 1) {
+        clearInterval(interval)
+        handleSkip()
+        return 0
+      }
+      return t - 1
+    })
+  }, 1000)
+
+  return () => clearInterval(interval)
+}, [value])
+
+  const pickRandomCard = () => {
+    const chosen = Math.floor(Math.random() * data.length)
+    setValue(chosen)
+    setName(data[chosen].name)
+  }
   const handleNext = () => {
+    if (disabled) return
     setStep(s => Math.min(s + 1, 4))
+
+    setDisabled(true)
+    setTimeout(() => {
+      setDisabled(false)
+    }, 1000)
   }
 
-  const handleReset = () => {
+  const handleSkip = () => {
+    pickRandomCard()
     setStep(0)
   }
 
@@ -48,15 +76,15 @@ return (
         </button>
 
         <button
-          onClick={handleReset}
+          onClick={handleSkip}
           className="px-4 py-2 bg-gray-300 rounded"
         >
-          Reset
+          Skip
         </button>
       </div>
-
-      {/* Debug (optional) */}
-      <p>Step: {step}</p>
+      <p className="text-gray-600">
+        Next card in: {timeLeft}s
+      </p>
     </div>
   )
 }
