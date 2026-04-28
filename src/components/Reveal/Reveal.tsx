@@ -37,21 +37,29 @@ export function Reveal({ src, interval = 2500 }: Omit<RevealProps, 'origin'>) {
     return () => clearInterval(id)
   }, [interval, clips])
 
+  const maxZoom = 2.4
+  const minZoom = 1.0
+
+  const progress = step / (clips.length - 1)
+
+  const scale = maxZoom - progress * (maxZoom - minZoom)
+
   return (
 <div
-  className="w-[500px] h-[500px] shrink-0 border-solid border-red-700 border-4"
+  className="w-[500px] h-[500px] shrink-0 border-solid border-red-700 border-4 overflow-hidden relative"
   onContextMenu={e => e.preventDefault()}
 >
-      <img
-        src={src}
-        alt=""
-        draggable={false}
-        className="w-full h-full object-cover select-none"
-        style={{
-          clipPath: clips[step],
-          transition: 'clip-path 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        }}
-      />
-    </div>
+  <img
+    src={src}
+    alt=""
+    draggable={false}
+    className="w-full h-full object-cover select-none"
+    style={{
+      transform: `scale(${scale})`,
+      transformOrigin: origin,
+      transition: 'transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+    }}
+  />
+</div>
   )
 }
