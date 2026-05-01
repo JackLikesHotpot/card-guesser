@@ -43,8 +43,9 @@ useEffect(() => {
   const pickRandomCard = () => {
     const chosen = Math.floor(Math.random() * data.length)
     setValue(chosen)
-    setName(data[chosen].name)
+    setName(data[chosen].name.replace(/[^a-zA-Z0-9 \-'!,&★☆.]/g, ''))
   }
+
   const handleNext = () => {
     if (disabled) return
     setStep(s => Math.min(s + 1, 4))
