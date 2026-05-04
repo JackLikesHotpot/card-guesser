@@ -21,24 +21,21 @@ const origins = Object.keys(CLIP_STEPS)
 
 export function Reveal({ src, step = 0 }: RevealProps) {
   const [origin, setOrigin] = useState(() => origins[Math.floor(Math.random() * origins.length)])
-
-  useEffect(() => {
-    setLoaded(false)
-    setOrigin(origins[Math.floor(Math.random() * origins.length)])
-  }, [src])  
-
   const [loaded, setLoaded] = useState(false)
+
   const clips = CLIP_STEPS[origin]
   const safeStep = Math.max(0, Math.min(step, clips.length - 1))
 
   useEffect(() => {
     setLoaded(false)
+    setOrigin(origins[Math.floor(Math.random() * origins.length)])
   }, [src])
 
   return (
-    <div className="w-[500px] h-[500px] overflow-hidden relative bg-neutral-900 rounded-md">
-
-      {/* Loading screen */}
+    <div
+      className="w-[500px] h-[500px] overflow-hidden relative bg-neutral-900 rounded-md"
+      onContextMenu={e => e.preventDefault()}
+    >
       {!loaded && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
           <div className="w-8 h-8 border-2 border-neutral-600 border-t-white rounded-full animate-spin" />
@@ -46,7 +43,6 @@ export function Reveal({ src, step = 0 }: RevealProps) {
         </div>
       )}
 
-      {/* Image */}
       <div
         key={src}
         className="absolute inset-0"
