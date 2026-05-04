@@ -14,7 +14,7 @@ export function SearchBar({ guess, feedback, filtered, onChange, onGuess, onSele
   const [highlighted, setHighlighted] = useState(-1)
 
   const handleSelect = (n: string) => {
-    onSelect(n)
+    onSelect('')
     setShowDropdown(false)
     setHighlighted(-1)
     onGuess(n)

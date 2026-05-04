@@ -3,6 +3,11 @@ export interface Card {
   image_url: string
   tag: string
   sets: string[]
+  id: string
+  archetype: string
+  type: string
+  humanReadableCardType: string
+  race: string
 }
 
 export interface RoundResult {
@@ -12,3 +17,4 @@ export interface RoundResult {
   score: number
   skipped: boolean
 }
+
