@@ -33,7 +33,7 @@ export function Reveal({ src, step = 0 }: RevealProps) {
 
   return (
     <div
-      className="w-[500px] h-[500px] overflow-hidden relative bg-neutral-900 rounded-md"
+      className="w-full h-full overflow-hidden relative bg-neutral-900 rounded-md"
       onContextMenu={e => e.preventDefault()}
     >
       {!loaded && (

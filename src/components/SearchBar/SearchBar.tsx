@@ -22,21 +22,20 @@ export function SearchBar({ guess, feedback, filtered, onChange, onGuess, onSele
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showDropdown || filtered.length === 0) return
-
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setHighlighted(h => Math.min(h + 1, filtered.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setHighlighted(h => Math.max(h - 1, 0))
-    } else if (e.key === 'Enter' && highlighted >= 0) {
-      e.preventDefault()
-      handleSelect(filtered[highlighted])
-    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlighted(h => Math.min(h + 1, filtered.length - 1)) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlighted(h => Math.max(h - 1, 0)) }
+    else if (e.key === 'Enter' && highlighted >= 0) { e.preventDefault(); handleSelect(filtered[highlighted]) }
   }
 
+  const borderColor = feedback === 'correct'
+    ? 'border-[#3a6b45]'
+    : feedback === 'wrong'
+    ? 'border-[#6b3a3a]'
+    : 'border-[#2a2a2a]'
+
   return (
-    <div className="relative w-full max-w-md">
+    <div className="relative w-full">
+      <p className="text-[#707070] text-xs tracking-widest uppercase mb-2">Guess the card</p>
       <input
         type="text"
         value={guess}
@@ -44,22 +43,18 @@ export function SearchBar({ guess, feedback, filtered, onChange, onGuess, onSele
         onKeyDown={handleKeyDown}
         onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
         onFocus={() => setShowDropdown(true)}
-        placeholder="Search for a card..."
-        className={`w-full px-4 py-2 rounded border text-sm outline-none transition-colors ${
-          feedback === 'correct' ? 'border-green-500 bg-green-50' :
-          feedback === 'wrong' ? 'border-red-500 bg-red-50' :
-          'border-gray-300'
-        }`}
+        placeholder="Search cards..."
+        className={`w-full px-4 py-3 rounded-lg bg-[#1a1a1a] border text-base text-[#e8e4dc] placeholder-[#444] outline-none transition-colors ${borderColor}`}
       />
 
       {showDropdown && filtered.length > 0 && (
-        <ul className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded shadow-lg z-10 max-h-60 overflow-y-auto">
+        <ul className="absolute top-full mt-1 w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg z-10 overflow-hidden">
           {filtered.map((n, i) => (
             <li
               key={n}
               onMouseDown={() => handleSelect(n)}
-              className={`px-4 py-2 text-sm cursor-pointer ${
-                i === highlighted ? 'bg-gray-200' : 'hover:bg-gray-100'
+              className={`px-4 py-3 text-sm cursor-pointer border-b border-[#222] last:border-0 transition-colors ${
+                i === highlighted ? 'bg-[#252525] text-[#e8e4dc]' : 'text-[#aaa] hover:bg-[#222] hover:text-[#e8e4dc]'
               }`}
             >
               {n}

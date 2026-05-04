@@ -6,7 +6,7 @@ import { GameHeader } from './components/GameHeader/GameHeader.tsx'
 import { Controls } from './components/Controls/Controls.tsx'
 import { WrongGuesses } from './components/WrongGuesses/WrongGuesses.tsx'
 import { History } from './components/History/History.tsx'
-import { GameOver } from './components/GameOver.tsx/GameOver.tsx'
+import { GameOver } from './components/GameOver/GameOver.tsx'
 import type { Card, RoundResult } from './types.ts'
 
 const SCORE_BY_STEP: Record<number, number> = {
@@ -27,6 +27,7 @@ const App = () => {
   const bucket_url = import.meta.env.VITE_BUCKET_URL
 
   const [name, setName] = useState('')
+  const [cardId, setCardId] = useState('')
   const [step, setStep] = useState(0)
   const [disabled, setDisabled] = useState(false)
   const [timeLeft, setTimeLeft] = useState(60)
@@ -43,7 +44,7 @@ const App = () => {
 
   const filtered = guess.trim().length > 0
     ? data
-        .map(c => c.name.replace(/[^a-zA-Z0-9 \-'!,&★☆.]/g, ''))
+        .map(c => c.name)
         .filter(n => n.toLowerCase().includes(guess.toLowerCase()))
         .filter(n => !wrongGuesses.includes(n))
         .slice(0, 8)
@@ -76,7 +77,9 @@ const App = () => {
 
   const pickRandomCard = () => {
     const chosen = Math.floor(Math.random() * data.length)
-    setName(data[chosen].name.replace(/[^a-zA-Z0-9 \-'!,&★☆.]/g, ''))
+    const card = data[chosen]
+    setName(card.name)
+    setCardId(card.id)
     setGuess('')
     setFeedback(null)
     setWrongGuesses([])
@@ -93,7 +96,7 @@ const App = () => {
   const handleSkip = () => {
     setHistory(prev => {
       if (prev.some(r => r.name === name)) return prev
-      return [...prev, { name, src: `${bucket_url}${name}.jpg`, steps: step, score: 0, skipped: true }]
+      return [...prev, { name, src: `${bucket_url}${cardId}.jpg`, steps: step, score: 0, skipped: true }]
     })
     setRevealed(name)
     setTimeout(() => { setRevealed(null); pickRandomCard(); setStep(0) }, 2000)
@@ -106,7 +109,7 @@ const App = () => {
       const earned = calculateScore(step, wrongGuesses.length)
       setLastScore(earned)
       setScore(prev => prev + earned)
-      setHistory(prev => [...prev, { name, src: `${bucket_url}${name}.jpg`, steps: step, score: earned, skipped: false }])
+      setHistory(prev => [...prev, { name, src: `${bucket_url}${cardId}.jpg`, steps: step, score: earned, skipped: false }])
       setFeedback('correct')
       setTimeout(() => { pickRandomCard(); setStep(0) }, 1000)
     } else {
@@ -131,15 +134,43 @@ const App = () => {
   )
 
   return (
-    <div className="flex flex-col items-center gap-4 p-6">
-      <GameHeader gameTimeLeft={gameTimeLeft} score={score} lastScore={lastScore} />
-      <div style={{ width: 500, height: 500 }}>
-        <Reveal src={`${bucket_url}${name}.jpg`} step={step} />
-      </div>      
-      <Controls timeLeft={timeLeft} revealed={revealed} onNext={handleNext} onSkip={handleSkip} />
-      <SearchBar guess={guess} feedback={feedback} filtered={filtered} onChange={setGuess} onGuess={handleGuess} onSelect={n => setGuess(n)} />
-      <WrongGuesses guesses={wrongGuesses} />
-      <History history={history} />
+    // Increase max width and use more of the screen
+<div className="min-h-screen bg-[#1a1814] flex p-8 justify-center">
+  <div className="w-1/2">  {/* was max-w-2xl */}
+
+        <GameHeader gameTimeLeft={gameTimeLeft} score={score} lastScore={lastScore} />
+
+        <div className="flex gap-5 items-start">
+
+          {/* Left — card + controls */}
+          <div className="flex flex-col items-center gap-3 flex-shrink-0 w-1/2">
+          <div className="w-full aspect-square">
+            <Reveal src={`${bucket_url}${cardId}.jpg`} step={step} />
+          </div>
+            <Controls
+              timeLeft={timeLeft}
+              revealed={revealed}
+              onNext={handleNext}
+              onSkip={handleSkip}
+            />
+          </div>
+
+          {/* Right — search + wrong guesses + history */}
+          <div className="flex-1 flex flex-col gap-4 min-w-0">
+            <SearchBar
+              guess={guess}
+              feedback={feedback}
+              filtered={filtered}
+              onChange={setGuess}
+              onGuess={handleGuess}
+              onSelect={n => setGuess(n)}
+            />
+            <WrongGuesses guesses={wrongGuesses} />
+            <History history={history} />
+          </div>
+
+        </div>
+      </div>
     </div>
   )
 }
