@@ -17,17 +17,21 @@ const SCORE_BY_STEP: Record<number, number> = {
   4: 5,
 }
 
-const calculateScore = (steps: number, wrongs: number) =>
-  Math.max(1, (SCORE_BY_STEP[steps] ?? 5) - wrongs * 2)
+const calculateScore = (steps: number, wrongs: number) => {
+  const base = SCORE_BY_STEP[steps] ?? 5
+  const wrongPenalty = steps < 4 ? wrongs * 2 : 0
+  return Math.max(1, base - wrongPenalty)
+}
 
 const App = () => {
   const [data, setData] = useState<Card[]>([])
 
-useEffect(() => {
-  fetch('/data/card_info.json')
-    .then(r => r.json())
-    .then(setData)
-}, [])
+  useEffect(() => {
+    fetch('./data/card_info.json')
+      .then(r => r.json())
+      .then(setData)
+  }, [])
+
   const bucket_url = import.meta.env.VITE_BUCKET_URL
 
   const [gameStarted, setGameStarted] = useState(false)
@@ -54,13 +58,13 @@ useEffect(() => {
   const pool = useMemo(() => {
     if (!settings) return data
     return data.filter(c => {
+      if (!c.id) return false
       if (settings.allowedTypes.length && !settings.allowedTypes.includes(c.type)) return false
       if (settings.allowedArchetypes.length && !settings.allowedArchetypes.includes(c.archetype)) return false
-      // if (settings.allowedTags.length && !settings.allowedTags.includes(c.tag)) return false
       if (settings.allowedSets.length && !c.sets.some(s => settings.allowedSets.includes(s))) return false
       return true
     })
-  }, [settings])
+  }, [settings, data])
 
   const filtered = guess.trim().length > 0
     ? pool
@@ -71,7 +75,7 @@ useEffect(() => {
     : []
 
   useEffect(() => {
-    if (!gameStarted) return
+    if (!gameStarted || gameOver) return
     const interval = setInterval(() => {
       setGameTimeLeft(t => {
         if (t <= 1) { clearInterval(interval); setGameOver(true); return 0 }
@@ -86,16 +90,22 @@ useEffect(() => {
     setTimeLeft(settings!.cardDuration)
     const interval = setInterval(() => {
       setTimeLeft(t => {
-        if (t <= 1) { clearInterval(interval); handleSkip(); return 0 }
+        if (t <= 1) { clearInterval(interval); return 0 }
         return t - 1
       })
     }, 1000)
     return () => clearInterval(interval)
   }, [cardKey, gameStarted, gameOver])
 
-  const pickRandomCard = (currentPool: Card[] = pool) => {
-    let available = currentPool.filter(c => c.id !== lastId)
-    
+  useEffect(() => {
+    if (timeLeft === 0 && gameStarted && !gameOver) {
+      handleSkip()
+    }
+  }, [timeLeft])
+
+  const pickRandomCard = (currentPool: Card[] = pool, excludeId: string | null = lastId) => {
+    let available = currentPool.filter(c => c.id !== excludeId)
+
     if (!settings?.allowDuplicates) {
       available = available.filter(c => !seenIds.has(c.id))
     }
@@ -126,15 +136,17 @@ useEffect(() => {
     setLastScore(null)
     setStep(0)
     setGameOver(false)
+    setSeenIds(new Set())
+    setLastId(null)
 
     const filteredPool = data.filter(c => {
+      if (!c.id) return false
       if (s.allowedTypes.length && !s.allowedTypes.includes(c.type)) return false
       if (s.allowedArchetypes.length && !s.allowedArchetypes.includes(c.archetype)) return false
-      // if (s.allowedTags.length && !s.allowedTags.includes(c.tag)) return false
       if (s.allowedSets.length && !c.sets.some(set => s.allowedSets.includes(set))) return false
       return true
     })
-    pickRandomCard(filteredPool)
+    pickRandomCard(filteredPool, null)
   }
 
   const handleNext = () => {
@@ -144,35 +156,36 @@ useEffect(() => {
     setTimeout(() => setDisabled(false), 1000)
   }
 
-const handleSkip = () => {
-  const currentName = name
-  const currentId = cardId
-  setHistory(prev => {
-    if (prev.some(r => r.name === currentName)) return prev
-    return [...prev, { name: currentName, src: `${bucket_url}${currentId}.jpg`, steps: step, score: 0, skipped: true }]
-  })
-  setRevealed(currentName)
-  setTimeout(() => { setRevealed(null); pickRandomCard(); setStep(0) }, 2000)
-}
-
-const handleGuess = (selected: string) => {
-  if (feedback === 'correct') return
-  const correct = selected.toLowerCase() === name.toLowerCase()
-  if (correct) {
+  const handleSkip = () => {
     const currentName = name
     const currentId = cardId
-    const earned = calculateScore(step, wrongGuesses.length)
-    setLastScore(earned)
-    setScore(prev => prev + earned)
-    setHistory(prev => [...prev, { name: currentName, src: `${bucket_url}${currentId}.jpg`, steps: step, score: earned, skipped: false }])
-    setFeedback('correct')
-    setTimeout(() => { pickRandomCard(); setStep(0) }, 1000)
-  } else {
-    setWrongGuesses(prev => [...prev, selected])
-    setGuess('')
-    setFeedback('wrong')
+    const earned = Math.max(0, calculateScore(step, wrongGuesses.length))
+    setHistory(prev => {
+      if (prev.some(r => r.name === currentName)) return prev
+      return [...prev, { name: currentName, src: `${bucket_url}${currentId}.jpg`, steps: step, score: earned, skipped: true }]
+    })
+    setRevealed(currentName)
+    setTimeout(() => { setRevealed(null); pickRandomCard(pool, currentId); setStep(0) }, 2000)
   }
-}
+
+  const handleGuess = (selected: string) => {
+    if (feedback === 'correct') return
+    const correct = selected.toLowerCase() === name.toLowerCase()
+    if (correct) {
+      const currentName = name
+      const currentId = cardId
+      const earned = calculateScore(step, wrongGuesses.length)
+      setLastScore(earned)
+      setScore(prev => prev + earned)
+      setHistory(prev => [...prev, { name: currentName, src: `${bucket_url}${currentId}.jpg`, steps: step, score: earned, skipped: false }])
+      setFeedback('correct')
+      setTimeout(() => { pickRandomCard(); setStep(0) }, 1000)
+    } else {
+      setWrongGuesses(prev => [...prev, selected])
+      setGuess('')
+      setFeedback('wrong')
+    }
+  }
 
   const handlePlayAgain = () => {
     setGameStarted(false)
@@ -208,6 +221,7 @@ const handleGuess = (selected: string) => {
             <Controls
               timeLeft={timeLeft}
               revealed={revealed}
+              cardKey={cardKey}
               onNext={handleNext}
               onSkip={handleSkip}
             />
