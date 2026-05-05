@@ -13,7 +13,10 @@ export interface GameSettings {
   allowedArchetypes: string[]
   allowedSets: string[]
   allowDuplicates: boolean
+  allowEasyDropdown: boolean
 }
+
+// only enable easy dropdown button if an archetype/set is selected
 
 export function Settings({ data, onStart }: SettingsProps) {
   const [gameDuration, setGameDuration] = useState(900)
@@ -25,6 +28,7 @@ export function Settings({ data, onStart }: SettingsProps) {
   const [archetypeSearch, setArchetypeSearch] = useState('')
   const [setSearch, setSetSearch] = useState('')
   const [allowDuplicates, setAllowDuplicates] = useState(false)
+  const [allowEasyDropdown, setAllowEasyDropdown] = useState(false)
   const allTypes = useMemo(() => [...new Set(data.map(c => c.type).filter(Boolean))].sort(), [data])
   const allArchetypes = useMemo(() => [...new Set(data.map(c => c.archetype).filter(Boolean))].sort(), [data])
   // const allTags = useMemo(() => [...new Set(data.map(c => c.tag).filter(Boolean))].sort(), [data])
@@ -38,7 +42,7 @@ export function Settings({ data, onStart }: SettingsProps) {
   }
 
   const handleStart = () => {
-    onStart({ gameDuration, cardDuration, allowedTypes, allowedArchetypes, allowedSets, allowDuplicates })
+    onStart({ gameDuration, cardDuration, allowedTypes, allowedArchetypes, allowedSets, allowDuplicates, allowEasyDropdown })
   }
 
   const matchingCards = data.filter(c => {
@@ -102,6 +106,22 @@ export function Settings({ data, onStart }: SettingsProps) {
             </button>
           </div>
         </div>
+
+        <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[#f5f5f5] text-sm font-medium">Enable easy dropdown?</p>
+              <p className="text-[#606060] text-xs mt-1">Dropdown options will only include all possible cards in the selection.</p>
+            </div>
+            <button
+              onClick={() => setAllowEasyDropdown(d => !d)}
+              className={`w-11 h-6 rounded-full transition-colors relative ${allowEasyDropdown ? 'bg-[#f5f5f5]' : 'bg-[#383838]'}`}
+            >
+              <span className={`absolute top-1 w-4 h-4 rounded-full transition-all ${allowEasyDropdown ? 'left-6 bg-[#1c1c1c]' : 'left-1 bg-[#606060]'}`} />
+            </button>
+          </div>
+        </div>
+        
           {/* Tag */}
           {/* <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
             <p className="text-[#f5f5f5] text-sm font-medium mb-4">Tag</p>
