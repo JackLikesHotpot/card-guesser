@@ -207,7 +207,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-[#1c1c1c] p-8 flex justify-center">
-      <div className="w-1/2">
+      <div className="w-2/3">
 
         <GameHeader gameTimeLeft={gameTimeLeft} score={score} lastScore={lastScore} />
 
