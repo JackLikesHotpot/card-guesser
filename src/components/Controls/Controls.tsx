@@ -34,7 +34,7 @@ export function Controls({ timeLeft, revealed, cardKey, onNext, onSkip }: Contro
         <button
           onClick={onSkip}
           disabled={skipDelay > 0}
-          className="px-7 py-3 bg-[#1a1a1a] text-[#888] rounded-lg text-sm tracking-widest uppercase border border-[#2a2a2a] hover:border-[#444] hover:text-[#aaa] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="whitespace-nowrap w-28 px-7 py-3 bg-[#1a1a1a] text-[#888] rounded-lg text-sm tracking-widest uppercase border border-[#2a2a2a] hover:border-[#444] hover:text-[#aaa] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {skipDelay > 0 ? `Skip (${skipDelay})` : 'Skip'}
         </button>
