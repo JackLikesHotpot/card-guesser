@@ -1,11 +1,27 @@
+import { useEffect, useState } from 'react'
+
 interface ControlsProps {
   timeLeft: number
   revealed: string | null
+  cardKey: number
   onNext: () => void
   onSkip: () => void
 }
 
-export function Controls({ timeLeft, revealed, onNext, onSkip }: ControlsProps) {
+export function Controls({ timeLeft, revealed, cardKey, onNext, onSkip }: ControlsProps) {
+  const [skipDelay, setSkipDelay] = useState(5)
+
+  useEffect(() => {
+    setSkipDelay(5)
+    const interval = setInterval(() => {
+      setSkipDelay(d => {
+        if (d <= 1) { clearInterval(interval); return 0 }
+        return d - 1
+      })
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [cardKey])
+
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="flex gap-2">
@@ -17,9 +33,10 @@ export function Controls({ timeLeft, revealed, onNext, onSkip }: ControlsProps) 
         </button>
         <button
           onClick={onSkip}
-          className="px-7 py-3 bg-[#1a1a1a] text-[#888] rounded-lg text-sm tracking-widest uppercase border border-[#2a2a2a] hover:border-[#444] hover:text-[#aaa] transition-colors"
+          disabled={skipDelay > 0}
+          className="px-7 py-3 bg-[#1a1a1a] text-[#888] rounded-lg text-sm tracking-widest uppercase border border-[#2a2a2a] hover:border-[#444] hover:text-[#aaa] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Skip
+          {skipDelay > 0 ? `Skip (${skipDelay})` : 'Skip'}
         </button>
       </div>
       <p className="text-[#c3c3c3] text-sm tracking-wide">Next card in {timeLeft}s</p>

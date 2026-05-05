@@ -17,14 +17,18 @@ const SCORE_BY_STEP: Record<number, number> = {
   4: 5,
 }
 
-const calculateScore = (steps: number, wrongs: number) =>
-  Math.max(1, (SCORE_BY_STEP[steps] ?? 5) - wrongs * 2)
+
+const calculateScore = (steps: number, wrongs: number) => {
+  const base = SCORE_BY_STEP[steps] ?? 5
+  const wrongPenalty = steps < 4 ? wrongs * 2 : 0
+  return Math.max(1, base - wrongPenalty)
+}
 
 const App = () => {
   const [data, setData] = useState<Card[]>([])
 
 useEffect(() => {
-  fetch('/data/card_info.json')
+  fetch('./data/card_info.json')
     .then(r => r.json())
     .then(setData)
 }, [])
@@ -145,11 +149,16 @@ useEffect(() => {
   }
 
 const handleSkip = () => {
+  if (step < 4) {
+    handleNext()
+    return
+  }
+  const earned = Math.max(0, calculateScore(step, wrongGuesses.length))
   const currentName = name
   const currentId = cardId
   setHistory(prev => {
     if (prev.some(r => r.name === currentName)) return prev
-    return [...prev, { name: currentName, src: `${bucket_url}${currentId}.jpg`, steps: step, score: 0, skipped: true }]
+    return [...prev, { name: currentName, src: `${bucket_url}${currentId}.jpg`, steps: step, score: earned, skipped: true }]
   })
   setRevealed(currentName)
   setTimeout(() => { setRevealed(null); pickRandomCard(); setStep(0) }, 2000)
@@ -208,6 +217,7 @@ const handleGuess = (selected: string) => {
             <Controls
               timeLeft={timeLeft}
               revealed={revealed}
+              cardKey={cardKey}
               onNext={handleNext}
               onSkip={handleSkip}
             />
