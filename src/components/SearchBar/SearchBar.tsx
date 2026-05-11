@@ -48,7 +48,7 @@ export function SearchBar({ guess, feedback, filtered, onChange, onGuess, onSele
       />
 
       {showDropdown && filtered.length > 0 && (
-        <ul className="absolute top-full mt-1 w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg z-10 overflow-hidden">
+        <ul className="absolute top-full mt-1 w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg z-10 overflow-y-auto max-h-64">
           {filtered.map((n, i) => (
             <li
               key={n}
