@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import type { Card } from '../../types'
+import { useState, useMemo, useEffect } from 'react'
+import type { Card, CardSet } from '../../types'
 
 interface SettingsProps {
   data: Card[]
@@ -46,11 +46,17 @@ export function Settings({ data, onStart }: SettingsProps) {
   const [setSearch, setSetSearch] = useState('')
   const [allowDuplicates, setAllowDuplicates] = useState(false)
   const [allowEasyDropdown, setAllowEasyDropdown] = useState(false)
+  const [cardSetData, setCardSetData] = useState<CardSet[]>([]);
+
+  useEffect(() => {
+    fetch("./data/cardsets.json")
+      .then((res) => res.json())
+      .then((json: CardSet[]) => setCardSetData(json));
+  }, []);
 
   const allTypes = useMemo(() => [...new Set(data.map(c => c.type).filter(Boolean))].sort(), [data])
-  const allArchetypes = useMemo(() => [...new Set(data.map(c => c.archetype).filter(Boolean))].sort(), [data])
-  const allSets = useMemo(() => [...new Set(data.flatMap(c => c.sets).filter(Boolean))].sort(), [data])
-
+  const allArchetypes = useMemo(() => [...new Set(data.map(c => c.archetype).filter(Boolean))].sort(), [data])  
+  const allSets = useMemo(() => [...new Set(cardSetData.flatMap((item) => item.set_name).filter(Boolean))].sort(), [data]);
   const filteredArchetypes = allArchetypes.filter(a => a.toLowerCase().includes(archetypeSearch.toLowerCase()))
   const filteredSets = allSets.filter(s => s.toLowerCase().includes(setSearch.toLowerCase()))
 

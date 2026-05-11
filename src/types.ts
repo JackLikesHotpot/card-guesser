@@ -10,6 +10,13 @@ export interface Card {
   race: string
 }
 
+export interface CardSet {
+  set_name: string
+  set_code: string
+  num_of_cards: number
+  tcg_date: string
+};
+
 export interface RoundResult {
   name: string
   src: string
