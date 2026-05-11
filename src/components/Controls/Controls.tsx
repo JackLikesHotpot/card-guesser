@@ -9,10 +9,10 @@ interface ControlsProps {
 }
 
 export function Controls({ timeLeft, revealed, cardKey, onNext, onSkip }: ControlsProps) {
-  const [skipDelay, setSkipDelay] = useState(5)
+  const [skipDelay, setSkipDelay] = useState(10)
 
   useEffect(() => {
-    setSkipDelay(5)
+    setSkipDelay(10)
     const interval = setInterval(() => {
       setSkipDelay(d => {
         if (d <= 1) { clearInterval(interval); return 0 }
