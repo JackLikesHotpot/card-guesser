@@ -54,7 +54,7 @@ const App = () => {
   const [cardKey, setCardKey] = useState(0)
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set())
   const [lastId, setLastId] = useState<string | null>(null)
-
+  
   const pool = useMemo(() => {
     if (!settings) return data
     return data.filter(c => {
@@ -66,8 +66,10 @@ const App = () => {
     })
   }, [settings, data])
 
+  const dropdownSource = settings?.allowEasyDropdown ? pool : data
+
   const filtered = guess.trim().length > 0
-    ? pool
+    ? dropdownSource
         .map(c => c.name)
         .filter(n => n.toLowerCase().includes(guess.toLowerCase()))
         .filter(n => !wrongGuesses.includes(n))
