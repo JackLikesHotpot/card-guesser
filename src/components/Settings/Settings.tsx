@@ -39,6 +39,10 @@ function FilterHeader({ label, count, onClear }: { label: string; count: number;
 export function Settings({ data, onStart }: SettingsProps) {
   const [gameDuration, setGameDuration] = useState(900)
   const [cardDuration, setCardDuration] = useState(60)
+  const [minDate, setMinDate] = useState<string>("2000-05-01");
+  const [maxDate, setMaxDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
   const [allowedTypes, setAllowedTypes] = useState<string[]>([])
   const [allowedArchetypes, setAllowedArchetypes] = useState<string[]>([])
   const [allowedSets, setAllowedSets] = useState<string[]>([])
@@ -102,6 +106,29 @@ export function Settings({ data, onStart }: SettingsProps) {
                 <input
                   type="number" min={5} max={300} value={cardDuration}
                   onChange={e => setCardDuration(Number(e.target.value))}
+                  className="w-full px-4 py-2.5 bg-[#1c1c1c] border border-[#383838] rounded-lg text-[#f5f5f5] text-sm outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Date picker */}
+          <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
+            <p className="text-[#f5f5f5] text-sm font-medium mb-4">Date</p>
+            <div className="flex gap-6">
+              <div className="flex-1">
+                <p className="text-[#b0b0b0] text-xs tracking-widest uppercase mb-2">From date</p>
+                <input
+                  type="date" value={minDate} defaultValue={minDate}
+                  onChange={(e) => setMinDate((e.target.value))}
+                  className="w-full px-4 py-2.5 bg-[#1c1c1c] border border-[#383838] rounded-lg text-[#f5f5f5] text-sm outline-none"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="text-[#b0b0b0] text-xs tracking-widest uppercase mb-2">To date</p>
+                <input
+                  type="date" value={maxDate} defaultValue={maxDate}
+                  onChange={e => setMaxDate((e.target.value))}
                   className="w-full px-4 py-2.5 bg-[#1c1c1c] border border-[#383838] rounded-lg text-[#f5f5f5] text-sm outline-none"
                 />
               </div>
