@@ -48,7 +48,13 @@ export function SearchBar({ guess, feedback, filtered, onChange, onGuess, onSele
       />
 
       {showDropdown && filtered.length > 0 && (
-        <ul className="absolute top-full mt-1 w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg z-10 overflow-y-auto max-h-64">
+        <ul className="absolute top-full mt-1 w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg z-10 overflow-y-auto max-h-64
+          [&::-webkit-scrollbar]:w-1.5
+          [&::-webkit-scrollbar-track]:bg-[#1a1a1a]
+          [&::-webkit-scrollbar-thumb]:bg-[#2a2a2a]
+          [&::-webkit-scrollbar-thumb]:rounded-full
+          hover:[&::-webkit-scrollbar-thumb]:bg-[#3a3a3a]
+        ">
           {filtered.map((n, i) => (
             <li
               key={n}

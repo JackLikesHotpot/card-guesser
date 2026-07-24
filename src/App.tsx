@@ -68,13 +68,25 @@ const App = () => {
 
   const dropdownSource = settings?.allowEasyDropdown ? pool : data
 
-  const filtered = guess.trim().length > 0
-    ? dropdownSource
-        .map(c => c.name)
-        .filter(n => n.toLowerCase().includes(guess.toLowerCase()))
-        .filter(n => !wrongGuesses.includes(n))
-        .slice(0, 8)
-    : []
+const getMatchScore = (name: string, query: string): number => {
+  const n = name.toLowerCase();
+  const q = query.toLowerCase();
+
+  if (n === q) return 0;
+  if (n.startsWith(q)) return 1;
+  if (n.includes(` ${q}`)) return 2;
+  if (n.includes(q)) return 3;
+  return 4;
+}
+
+const filtered = guess.trim().length > 0
+  ? dropdownSource
+      .map(c => c.name)
+      .filter(n => n.toLowerCase().includes(guess.toLowerCase()))
+      .filter(n => !wrongGuesses.includes(n))
+      .sort((a, b) => getMatchScore(a, guess) - getMatchScore(b, guess))
+      .slice(0, 15)
+  : []
 
   useEffect(() => {
     if (!gameStarted || gameOver) return
