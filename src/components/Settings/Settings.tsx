@@ -286,7 +286,7 @@ export function Settings({ data, onStart }: SettingsProps) {
             />
             <div className="relative">
               <div
-                className="flex flex-wrap gap-2 max-h-52 overflow-y-auto pr-1
+                className="flex flex-wrap gap-2 max-h-52 overflow-y-auto pr-1 pb-6
                   [&::-webkit-scrollbar]:w-1.5
                   [&::-webkit-scrollbar-track]:bg-transparent
                   [&::-webkit-scrollbar-thumb]:bg-[#383838]
@@ -330,7 +330,7 @@ export function Settings({ data, onStart }: SettingsProps) {
             />
             <div className="relative">
               <div
-                className="flex flex-wrap gap-2 max-h-52 overflow-y-auto pr-1
+                className="flex flex-wrap gap-2 max-h-52 overflow-y-auto pr-1 pb-6
                   [&::-webkit-scrollbar]:w-1.5
                   [&::-webkit-scrollbar-track]:bg-transparent
                   [&::-webkit-scrollbar-thumb]:bg-[#383838]
