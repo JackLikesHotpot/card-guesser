@@ -42,12 +42,12 @@ export function GameOver({ score, history, onPlayAgain }: GameOverProps) {
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-[#ccc] truncate">{r.name}</p>
                 <p className="text-[11px] text-[#555]">
-                  {r.skipped ? 'skipped' : `${r.steps} reveal${r.steps !== 1 ? 's' : ''}`}
+                  {r.skipped ? `Skipped at zoom ${r.steps + 1}/5` : `Got it at zoom ${r.steps + 1}/5`}
                 </p>
               </div>
-                <p className="text-[11px] text-[#555]">
-                  {r.skipped ? `Skipped at zoom ${r.steps + 1}/5` : `Got it at Zoom ${r.steps + 1}/5`}
-                </p>
+              <span className={`text-xs font-medium flex-shrink-0 ${r.skipped ? 'text-[#555]' : 'text-[#6abf7b]'}`}>
+                {r.skipped ? '—' : `+${r.score}`}
+              </span>
             </div>
           ))}
         </div>
