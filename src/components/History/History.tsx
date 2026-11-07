@@ -16,8 +16,8 @@ export function History({ history }: HistoryProps) {
             <img src={r.src} className="w-7 h-10 object-cover rounded flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-base text-[#ccc] truncate">{r.name}</p>
-              <p className="text-sm text-[#555]">
-                {r.skipped ? 'Skipped' : `${r.steps} reveal${r.steps !== 1 ? 's' : ''}`}
+               <p className="text-sm text-[#555]">
+                {r.skipped ? `Skipped at zoom ${r.steps + 1}/5` : `Got it at Zoom ${r.steps + 1}/5`}
               </p>
             </div>
             <span className={`text-xs font-medium flex-shrink-0 ${r.skipped ? 'text-[#555]' : 'text-[#6abf7b]'}`}>
