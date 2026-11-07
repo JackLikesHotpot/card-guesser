@@ -99,6 +99,15 @@ const filtered = guess.trim().length > 0
     return () => clearInterval(interval)
   }, [gameStarted, gameOver])
 
+  // Record the card that was on screen when the game ended
+  useEffect(() => {
+    if (!gameOver || !cardId) return
+    setHistory(prev => {
+      if (prev.at(-1)?.name === name) return prev
+      return [...prev, { name, src: `${bucket_url}${cardId}.jpg`, steps: step, score: 0, skipped: true }]
+    })
+  }, [gameOver])
+
   useEffect(() => {
     if (!gameStarted || gameOver) return
     setTimeLeft(settings!.cardDuration)
