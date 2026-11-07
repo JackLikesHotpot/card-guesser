@@ -1,22 +1,37 @@
-import { useState, useMemo } from 'react'
-import type { Card } from '../../types'
+import { useState, useMemo } from "react";
+import type { Card, Region } from "../../types";
 
 interface SettingsProps {
-  data: Card[]
-  onStart: (settings: GameSettings) => void
+  data: Card[];
+  onStart: (settings: GameSettings) => void;
 }
 
 export interface GameSettings {
-  gameDuration: number
-  cardDuration: number
-  allowedTypes: string[]
-  allowedArchetypes: string[]
-  allowedSets: string[]
-  allowDuplicates: boolean
-  allowEasyDropdown: boolean
+  gameDuration: number;
+  cardDuration: number;
+  allowedTypes: string[];
+  allowedArchetypes: string[];
+  allowedSets: string[];
+  allowDuplicates: boolean;
+  allowEasyDropdown: boolean;
+  region: Region;
 }
 
-function FilterHeader({ label, count, onClear }: { label: string; count: number; onClear: () => void }) {
+const REGIONS: { value: Region; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "tcg", label: "TCG" },
+  { value: "ocg", label: "OCG" },
+];
+
+function FilterHeader({
+  label,
+  count,
+  onClear,
+}: {
+  label: string;
+  count: number;
+  onClear: () => void;
+}) {
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2">
@@ -28,74 +43,123 @@ function FilterHeader({ label, count, onClear }: { label: string; count: number;
         )}
       </div>
       {count > 0 && (
-        <button onClick={onClear} className="text-[#868686] hover:text-[#f5f5f5] text-xs transition-colors">
+        <button
+          onClick={onClear}
+          className="text-[#868686] hover:text-[#f5f5f5] text-xs transition-colors"
+        >
           × Clear
         </button>
       )}
     </div>
-  )
+  );
 }
 
 export function Settings({ data, onStart }: SettingsProps) {
-  const [gameDuration, setGameDuration] = useState(900)
-  const [cardDuration, setCardDuration] = useState(60)
-  const [allowedTypes, setAllowedTypes] = useState<string[]>([])
-  const [allowedArchetypes, setAllowedArchetypes] = useState<string[]>([])
-  const [allowedSets, setAllowedSets] = useState<string[]>([])
-  const [archetypeSearch, setArchetypeSearch] = useState('')
-  const [setSearch, setSetSearch] = useState('')
-  const [allowDuplicates, setAllowDuplicates] = useState(false)
-  const [allowEasyDropdown, setAllowEasyDropdown] = useState(false)
+  const [gameDuration, setGameDuration] = useState(900);
+  const [cardDuration, setCardDuration] = useState(60);
+  const [allowedTypes, setAllowedTypes] = useState<string[]>([]);
+  const [allowedArchetypes, setAllowedArchetypes] = useState<string[]>([]);
+  const [allowedSets, setAllowedSets] = useState<string[]>([]);
+  const [archetypeSearch, setArchetypeSearch] = useState("");
+  const [setSearch, setSetSearch] = useState("");
+  const [allowDuplicates, setAllowDuplicates] = useState(false);
+  const [allowEasyDropdown, setAllowEasyDropdown] = useState(false);
+  const [region, setRegion] = useState<Region>("all");
 
-  const allTypes = useMemo(() => [...new Set(data.map(c => c.type).filter(Boolean))].sort(), [data])
-  const allArchetypes = useMemo(() => [...new Set(data.map(c => c.archetype).filter(Boolean))].sort(), [data])
-  const allSets = useMemo(() => [...new Set(data.flatMap(c => c.sets).filter(Boolean))].sort(), [data])
+  const allTypes = useMemo(
+    () => [...new Set(data.map((c) => c.type).filter(Boolean))].sort(),
+    [data],
+  );
+  const allArchetypes = useMemo(
+    () => [...new Set(data.map((c) => c.archetype).filter(Boolean))].sort(),
+    [data],
+  );
+  const allSets = useMemo(
+    () => [...new Set(data.flatMap((c) => c.sets).filter(Boolean))].sort(),
+    [data],
+  );
 
-  const filteredArchetypes = allArchetypes.filter(a => a.toLowerCase().includes(archetypeSearch.toLowerCase()))
-  const filteredSets = allSets.filter(s => s.toLowerCase().includes(setSearch.toLowerCase()))
+  const filteredArchetypes = allArchetypes.filter((a) =>
+    a.toLowerCase().includes(archetypeSearch.toLowerCase()),
+  );
+  const filteredSets = allSets.filter((s) =>
+    s.toLowerCase().includes(setSearch.toLowerCase()),
+  );
 
-  const toggle = (value: string, list: string[], setList: (v: string[]) => void) => {
-    setList(list.includes(value) ? list.filter(v => v !== value) : [...list, value])
-  }
+  const toggle = (
+    value: string,
+    list: string[],
+    setList: (v: string[]) => void,
+  ) => {
+    setList(
+      list.includes(value) ? list.filter((v) => v !== value) : [...list, value],
+    );
+  };
 
   const handleStart = () => {
-    onStart({ gameDuration, cardDuration, allowedTypes, allowedArchetypes, allowedSets, allowDuplicates, allowEasyDropdown })
-  }
+    onStart({
+      gameDuration,
+      cardDuration,
+      allowedTypes,
+      allowedArchetypes,
+      allowedSets,
+      allowDuplicates,
+      allowEasyDropdown,
+      region,
+    });
+  };
 
-  const matchingCards = data.filter(c => {
-    if (allowedTypes.length && !allowedTypes.includes(c.type)) return false
-    if (allowedArchetypes.length && !allowedArchetypes.includes(c.archetype)) return false
-    if (allowedSets.length && !c.sets.some(s => allowedSets.includes(s))) return false
-    return true
-  }).length
+  const matchingCards = data.filter((c) => {
+    if (!c.id) return false;
+    if (region !== "all" && c.tag?.toLowerCase() !== region) return false;
+    if (allowedTypes.length && !allowedTypes.includes(c.type)) return false;
+    if (allowedArchetypes.length && !allowedArchetypes.includes(c.archetype))
+      return false;
+    if (allowedSets.length && !c.sets.some((s) => allowedSets.includes(s)))
+      return false;
+    return true;
+  }).length;
 
   return (
     <div className="min-h-screen bg-[#1c1c1c] p-8 flex justify-center">
       <div className="w-1/2">
         <div className="text-center mb-8">
-          <p className="text-[#606060] text-xs tracking-widest uppercase mb-2">Settings</p>
-          <p className="text-[#f5f5f5] text-3xl font-medium">Yu-Gi-Oh! Card Guesser</p>
+          <p className="text-[#606060] text-xs tracking-widest uppercase mb-2">
+            Settings
+          </p>
+          <p className="text-[#f5f5f5] text-3xl font-medium">
+            Yu-Gi-Oh! Card Guesser
+          </p>
         </div>
 
         <div className="flex flex-col gap-6">
-
           {/* Timers */}
           <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
             <p className="text-[#f5f5f5] text-sm font-medium mb-4">Timers</p>
             <div className="flex gap-6">
               <div className="flex-1">
-                <p className="text-[#b0b0b0] text-xs tracking-widest uppercase mb-2">Game duration (seconds)</p>
+                <p className="text-[#b0b0b0] text-xs tracking-widest uppercase mb-2">
+                  Game duration (seconds)
+                </p>
                 <input
-                  type="number" min={30} max={3600} value={gameDuration}
-                  onChange={e => setGameDuration(Number(e.target.value))}
+                  type="number"
+                  min={30}
+                  max={3600}
+                  value={gameDuration}
+                  onChange={(e) => setGameDuration(Number(e.target.value))}
                   className="w-full px-4 py-2.5 bg-[#1c1c1c] border border-[#383838] rounded-lg text-[#f5f5f5] text-sm outline-none"
                 />
               </div>
               <div className="flex-1">
-                <p className="text-[#b0b0b0] text-xs tracking-widest uppercase mb-2">Per card (seconds)</p>
+                <p className="text-[#b0b0b0] text-xs tracking-widest uppercase mb-2">
+                  Per card (seconds)
+                </p>
                 <input
-                  type="number" min={5} max={300} value={cardDuration}
-                  onChange={e => setCardDuration(Number(e.target.value))}
+                  type="number"
+                  min={5}
+                  max={300}
+                  value={cardDuration}
+                  onChange={(e) => setCardDuration(Number(e.target.value))}
                   className="w-full px-4 py-2.5 bg-[#1c1c1c] border border-[#383838] rounded-lg text-[#f5f5f5] text-sm outline-none"
                 />
               </div>
@@ -106,45 +170,98 @@ export function Settings({ data, onStart }: SettingsProps) {
           <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[#f5f5f5] text-sm font-medium">Allow duplicates</p>
-                <p className="text-[#606060] text-xs mt-1">Same card can appear more than once</p>
+                <p className="text-[#f5f5f5] text-sm font-medium">
+                  Allow duplicates
+                </p>
+                <p className="text-[#606060] text-xs mt-1">
+                  Same card can appear more than once
+                </p>
               </div>
               <button
-                onClick={() => setAllowDuplicates(d => !d)}
-                className={`w-11 h-6 rounded-full transition-colors relative ${allowDuplicates ? 'bg-[#f5f5f5]' : 'bg-[#383838]'}`}
+                onClick={() => setAllowDuplicates((d) => !d)}
+                className={`w-11 h-6 rounded-full transition-colors relative ${allowDuplicates ? "bg-[#f5f5f5]" : "bg-[#383838]"}`}
               >
-                <span className={`absolute top-1 w-4 h-4 rounded-full transition-all ${allowDuplicates ? 'left-6 bg-[#1c1c1c]' : 'left-1 bg-[#606060]'}`} />
+                <span
+                  className={`absolute top-1 w-4 h-4 rounded-full transition-all ${allowDuplicates ? "left-6 bg-[#1c1c1c]" : "left-1 bg-[#606060]"}`}
+                />
               </button>
             </div>
           </div>
 
-        <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[#f5f5f5] text-sm font-medium">Enable easy dropdown?</p>
-              <p className="text-[#606060] text-xs mt-1">Dropdown options will only include cards in your current selection.</p>
+          {/* Easy dropdown */}
+          <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[#f5f5f5] text-sm font-medium">
+                  Enable easy dropdown?
+                </p>
+                <p className="text-[#606060] text-xs mt-1">
+                  Dropdown options will only include cards in your current
+                  selection.
+                </p>
+              </div>
+              <button
+                onClick={() => setAllowEasyDropdown((d) => !d)}
+                className={`w-11 h-6 rounded-full transition-colors relative ${allowEasyDropdown ? "bg-[#f5f5f5]" : "bg-[#383838]"}`}
+              >
+                <span
+                  className={`absolute top-1 w-4 h-4 rounded-full transition-all ${allowEasyDropdown ? "left-6 bg-[#1c1c1c]" : "left-1 bg-[#606060]"}`}
+                />
+              </button>
             </div>
-            <button
-              onClick={() => setAllowEasyDropdown(d => !d)}
-              className={`w-11 h-6 rounded-full transition-colors relative ${allowEasyDropdown ? 'bg-[#f5f5f5]' : 'bg-[#383838]'}`}
-            >
-              <span className={`absolute top-1 w-4 h-4 rounded-full transition-all ${allowEasyDropdown ? 'left-6 bg-[#1c1c1c]' : 'left-1 bg-[#606060]'}`} />
-            </button>
           </div>
-        </div>
+
+          {/* Region */}
+          <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[#f5f5f5] text-sm font-medium">Card pool</p>
+                <p className="text-[#606060] text-xs mt-1">
+                  TCG cards, OCG-only cards, or both
+                </p>
+              </div>
+              <div className="shrink-0 p-1 bg-[#1c1c1c] border border-[#383838] rounded-full">
+                <div className="relative grid grid-cols-3">
+                  <span
+                    className="absolute inset-y-0 left-0 w-1/3 rounded-full bg-[#f5f5f5] transition-transform duration-300 ease-out"
+                    style={{
+                      transform: `translateX(${REGIONS.findIndex((r) => r.value === region) * 100}%)`,
+                    }}
+                  />
+                  {REGIONS.map(({ value, label }) => (
+                    <button
+                      key={value}
+                      onClick={() => setRegion(value)}
+                      className={`relative z-10 w-14 py-1 rounded-full text-xs transition-colors duration-300 ${
+                        region === value
+                          ? "text-[#1c1c1c]"
+                          : "text-[#b0b0b0] hover:text-[#f5f5f5]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Card Type */}
           <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
-            <FilterHeader label="Card type" count={allowedTypes.length} onClear={() => setAllowedTypes([])} />
+            <FilterHeader
+              label="Card type"
+              count={allowedTypes.length}
+              onClear={() => setAllowedTypes([])}
+            />
             <div className="flex flex-wrap gap-2">
-              {allTypes.map(type => (
+              {allTypes.map((type) => (
                 <button
                   key={type}
                   onClick={() => toggle(type, allowedTypes, setAllowedTypes)}
                   className={`px-4 py-1.5 rounded-full text-xs border transition-colors ${
                     allowedTypes.includes(type)
-                      ? 'bg-[#f5f5f5] text-[#1c1c1c] border-[#f5f5f5]'
-                      : 'bg-transparent text-[#b0b0b0] border-[#383838] hover:border-[#606060]'
+                      ? "bg-[#f5f5f5] text-[#1c1c1c] border-[#f5f5f5]"
+                      : "bg-transparent text-[#b0b0b0] border-[#383838] hover:border-[#606060]"
                   }`}
                 >
                   {type}
@@ -155,22 +272,38 @@ export function Settings({ data, onStart }: SettingsProps) {
 
           {/* Archetype */}
           <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
-            <FilterHeader label="Archetype" count={allowedArchetypes.length} onClear={() => setAllowedArchetypes([])} />
+            <FilterHeader
+              label="Archetype"
+              count={allowedArchetypes.length}
+              onClear={() => setAllowedArchetypes([])}
+            />
             <input
-              type="text" placeholder="Search archetypes..." value={archetypeSearch}
-              onChange={e => setArchetypeSearch(e.target.value)}
+              type="text"
+              placeholder="Search archetypes..."
+              value={archetypeSearch}
+              onChange={(e) => setArchetypeSearch(e.target.value)}
               className="w-full px-4 py-2 bg-[#1c1c1c] border border-[#383838] rounded-lg text-[#f5f5f5] text-sm outline-none mb-3 placeholder-[#606060]"
             />
             <div className="relative">
-              <div className="flex flex-wrap gap-2 max-h-52 overflow-y-auto pr-1">
-                {filteredArchetypes.map(archetype => (
+              <div
+                className="flex flex-wrap gap-2 max-h-52 overflow-y-auto pr-1 pb-6
+                  [&::-webkit-scrollbar]:w-1.5
+                  [&::-webkit-scrollbar-track]:bg-transparent
+                  [&::-webkit-scrollbar-thumb]:bg-[#383838]
+                  [&::-webkit-scrollbar-thumb]:rounded-full
+                  hover:[&::-webkit-scrollbar-thumb]:bg-[#484848]
+                "
+              >
+                {filteredArchetypes.map((archetype) => (
                   <button
                     key={archetype}
-                    onClick={() => toggle(archetype, allowedArchetypes, setAllowedArchetypes)}
+                    onClick={() =>
+                      toggle(archetype, allowedArchetypes, setAllowedArchetypes)
+                    }
                     className={`px-4 py-1.5 rounded-full text-xs border transition-colors ${
                       allowedArchetypes.includes(archetype)
-                        ? 'bg-[#f5f5f5] text-[#1c1c1c] border-[#f5f5f5]'
-                        : 'bg-transparent text-[#b0b0b0] border-[#383838] hover:border-[#606060]'
+                        ? "bg-[#f5f5f5] text-[#1c1c1c] border-[#f5f5f5]"
+                        : "bg-transparent text-[#b0b0b0] border-[#383838] hover:border-[#606060]"
                     }`}
                   >
                     {archetype}
@@ -183,22 +316,36 @@ export function Settings({ data, onStart }: SettingsProps) {
 
           {/* Sets */}
           <div className="bg-[#272727] border border-[#383838] rounded-lg p-5">
-            <FilterHeader label="Set" count={allowedSets.length} onClear={() => setAllowedSets([])} />
+            <FilterHeader
+              label="Set"
+              count={allowedSets.length}
+              onClear={() => setAllowedSets([])}
+            />
             <input
-              type="text" placeholder="Search sets..." value={setSearch}
-              onChange={e => setSetSearch(e.target.value)}
+              type="text"
+              placeholder="Search sets..."
+              value={setSearch}
+              onChange={(e) => setSetSearch(e.target.value)}
               className="w-full px-4 py-2 bg-[#1c1c1c] border border-[#383838] rounded-lg text-[#f5f5f5] text-sm outline-none mb-3 placeholder-[#606060]"
             />
             <div className="relative">
-              <div className="flex flex-wrap gap-2 max-h-52 overflow-y-auto pr-1">
-                {filteredSets.map(set => (
+              <div
+                className="flex flex-wrap gap-2 max-h-52 overflow-y-auto pr-1 pb-6
+                  [&::-webkit-scrollbar]:w-1.5
+                  [&::-webkit-scrollbar-track]:bg-transparent
+                  [&::-webkit-scrollbar-thumb]:bg-[#383838]
+                  [&::-webkit-scrollbar-thumb]:rounded-full
+                  hover:[&::-webkit-scrollbar-thumb]:bg-[#484848]
+                "
+              >
+                {filteredSets.map((set) => (
                   <button
                     key={set}
                     onClick={() => toggle(set, allowedSets, setAllowedSets)}
                     className={`px-4 py-1.5 rounded-full text-xs border transition-colors ${
                       allowedSets.includes(set)
-                        ? 'bg-[#f5f5f5] text-[#1c1c1c] border-[#f5f5f5]'
-                        : 'bg-transparent text-[#b0b0b0] border-[#383838] hover:border-[#606060]'
+                        ? "bg-[#f5f5f5] text-[#1c1c1c] border-[#f5f5f5]"
+                        : "bg-transparent text-[#b0b0b0] border-[#383838] hover:border-[#606060]"
                     }`}
                   >
                     {set}
@@ -212,7 +359,7 @@ export function Settings({ data, onStart }: SettingsProps) {
           {/* Start */}
           <div className="flex items-center justify-between">
             <p className="text-[#606060] text-sm">
-              {matchingCards} card{matchingCards !== 1 ? 's' : ''} in pool
+              {matchingCards} card{matchingCards !== 1 ? "s" : ""} in pool
             </p>
             <button
               onClick={handleStart}
@@ -222,9 +369,8 @@ export function Settings({ data, onStart }: SettingsProps) {
               Start
             </button>
           </div>
-
         </div>
       </div>
     </div>
-  )
+  );
 }
