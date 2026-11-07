@@ -7,5 +7,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-    base: '/card-guesser/'
+  base: '/card-guesser/',
+  define: {
+    'import.meta.env.VITE_BUILD_TIME': JSON.stringify(String(Date.now())),
+  },
 })

@@ -48,7 +48,7 @@ const App = () => {
   const [data, setData] = useState<Card[]>([])
 
   useEffect(() => {
-    fetch('./data/card_info.json')
+    fetch(`./data/card_info.json?v=${import.meta.env.VITE_BUILD_TIME}`)
       .then(r => r.json())
       .then(setData)
   }, [])
