@@ -18,3 +18,4 @@ export interface RoundResult {
   skipped: boolean
 }
 
+export type Region = 'all' | 'tcg' | 'ocg'

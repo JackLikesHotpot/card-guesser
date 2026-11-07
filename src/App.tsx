@@ -23,6 +23,27 @@ const calculateScore = (steps: number, wrongs: number) => {
   return Math.max(1, base - wrongPenalty)
 }
 
+const filterPool = (data: Card[], s: GameSettings) =>
+  data.filter(c => {
+    if (!c.id) return false
+    if (s.region !== 'all' && c.tag?.toLowerCase() !== s.region) return false
+    if (s.allowedTypes.length && !s.allowedTypes.includes(c.type)) return false
+    if (s.allowedArchetypes.length && !s.allowedArchetypes.includes(c.archetype)) return false
+    if (s.allowedSets.length && !c.sets.some(set => s.allowedSets.includes(set))) return false
+    return true
+  })
+
+const getMatchScore = (name: string, query: string): number => {
+  const n = name.toLowerCase()
+  const q = query.toLowerCase()
+
+  if (n === q) return 0
+  if (n.startsWith(q)) return 1
+  if (n.includes(` ${q}`)) return 2
+  if (n.includes(q)) return 3
+  return 4
+}
+
 const App = () => {
   const [data, setData] = useState<Card[]>([])
 
@@ -36,7 +57,6 @@ const App = () => {
 
   const [gameStarted, setGameStarted] = useState(false)
   const [settings, setSettings] = useState<GameSettings | null>(null)
-
   const [name, setName] = useState('')
   const [cardId, setCardId] = useState('')
   const [step, setStep] = useState(0)
@@ -54,39 +74,22 @@ const App = () => {
   const [cardKey, setCardKey] = useState(0)
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set())
   const [lastId, setLastId] = useState<string | null>(null)
-  
-  const pool = useMemo(() => {
-    if (!settings) return data
-    return data.filter(c => {
-      if (!c.id) return false
-      if (settings.allowedTypes.length && !settings.allowedTypes.includes(c.type)) return false
-      if (settings.allowedArchetypes.length && !settings.allowedArchetypes.includes(c.archetype)) return false
-      if (settings.allowedSets.length && !c.sets.some(s => settings.allowedSets.includes(s))) return false
-      return true
-    })
-  }, [settings, data])
+
+  const pool = useMemo(
+    () => (settings ? filterPool(data, settings) : data),
+    [settings, data]
+  )
 
   const dropdownSource = settings?.allowEasyDropdown ? pool : data
 
-const getMatchScore = (name: string, query: string): number => {
-  const n = name.toLowerCase();
-  const q = query.toLowerCase();
-
-  if (n === q) return 0;
-  if (n.startsWith(q)) return 1;
-  if (n.includes(` ${q}`)) return 2;
-  if (n.includes(q)) return 3;
-  return 4;
-}
-
-const filtered = guess.trim().length > 0
-  ? dropdownSource
-      .map(c => c.name)
-      .filter(n => n.toLowerCase().includes(guess.toLowerCase()))
-      .filter(n => !wrongGuesses.includes(n))
-      .sort((a, b) => getMatchScore(a, guess) - getMatchScore(b, guess))
-      .slice(0, 15)
-  : []
+  const filtered = guess.trim().length > 0
+    ? dropdownSource
+        .map(c => c.name)
+        .filter(n => n.toLowerCase().includes(guess.toLowerCase()))
+        .filter(n => !wrongGuesses.includes(n))
+        .sort((a, b) => getMatchScore(a, guess) - getMatchScore(b, guess))
+        .slice(0, 15)
+    : []
 
   useEffect(() => {
     if (!gameStarted || gameOver) return
@@ -138,8 +141,7 @@ const filtered = guess.trim().length > 0
       return
     }
 
-    const chosen = Math.floor(Math.random() * available.length)
-    const card = available[chosen]
+    const card = available[Math.floor(Math.random() * available.length)]
     setName(card.name)
     setCardId(card.id)
     setLastId(card.id)
@@ -161,15 +163,7 @@ const filtered = guess.trim().length > 0
     setGameOver(false)
     setSeenIds(new Set())
     setLastId(null)
-
-    const filteredPool = data.filter(c => {
-      if (!c.id) return false
-      if (s.allowedTypes.length && !s.allowedTypes.includes(c.type)) return false
-      if (s.allowedArchetypes.length && !s.allowedArchetypes.includes(c.archetype)) return false
-      if (s.allowedSets.length && !c.sets.some(set => s.allowedSets.includes(set))) return false
-      return true
-    })
-    pickRandomCard(filteredPool, null)
+    pickRandomCard(filterPool(data, s), null)
   }
 
   const handleNext = () => {
